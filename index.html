@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>GPS Tafsilotlar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .card {
+      background: #1e1e1e;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
+      box-shadow: 0 0 20px #000;
+    }
+
+    .title {
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: #00f2ff;
+    }
+
+    .value {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📡 GPS Tafsilotlar</h1>
+
+  <div class="card">
+    <div class="title">🛰 GPS Status</div>
+    <div class="value" id="gpsStatus">Tekshirilmoqda...</div>
+  </div>
+
+  <div class="card">
+    <div class="title">📍 Koordinatalar</div>
+    <div class="value" id="location">---</div>
+  </div>
+
+  <div class="card">
+    <div class="title">🚀 Tezlik / Aniqlik</div>
+    <div class="value" id="speedAcc">---</div>
+  </div>
+
+  <div class="card">
+    <div class="title">🕒 So‘nggi yangilanish</div>
+    <div class="value" id="timestamp">---</div>
+  </div>
+
+  <div class="card">
+    <div class="title">🌍 Davlat / Shahar</div>
+    <div class="value" id="region">Yuklanmoqda...</div>
+  </div>
+
+  <script>
+    const gpsStatus = document.getElementById("gpsStatus");
+    const locationDiv = document.getElementById("location");
+    const speedAcc = document.getElementById("speedAcc");
+    const regionDiv = document.getElementById("region");
+    const timestampDiv = document.getElementById("timestamp");
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lon = pos.coords.longitude.toFixed(6);
+          const speed = pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(2) + " km/soat" : "Harakatsiz";
+          const accuracy = pos.coords.accuracy.toFixed(2) + " metr";
+          const timestamp = new Date(pos.timestamp).toLocaleString();
+
+          gpsStatus.innerText = "✅ GPS ulandi!";
+          locationDiv.innerHTML = Kenglik: ${lat}<br>Uzunlik: ${lon};
+          speedAcc.innerHTML = Tezlik: ${speed}<br>Aniqlik: ${accuracy};
+          timestampDiv.innerText = timestamp;
+
+          // IP orqali davlat va shahar nomini olish
+          fetch("https://ipapi.co/json/")
+            .then((res) => res.json())
+            .then((data) => {
+              regionDiv.innerText = ${data.city}, ${data.country_name};
+            })
+            .catch(() => {
+              regionDiv.innerText = "Aniqlanmadi";
+            });
+        },
+        (err) => {
+          gpsStatus.innerText = "❌ GPS ulanmagan: " + err.message;
+          locationDiv.innerText = "---";
+          speedAcc.innerText = "---";
+          timestampDiv.innerText = "---";
+          regionDiv.innerText = "---";
+        }
+      );
+    } else {
+      gpsStatus.innerText = "❌ Qurilmangiz GPS'ni qo‘llamaydi.";
+    }
+  </script>
+
+</body>
+</html>
