@@ -2,51 +2,59 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <title>GPS aniqlash testi</title>
+  <title>Tezlikni aniqlash (GPS)</title>
   <style>
     body {
-      background-color: #111;
+      background-color: #000;
       color: #0f0;
       font-family: monospace;
-      padding: 50px;
       text-align: center;
+      padding-top: 80px;
     }
-    #status {
-      font-size: 22px;
-      margin: 20px;
-    }
-    #result {
-      color: #fff;
+    h1 { color: #00ffff; }
+    .speed {
+      font-size: 48px;
       margin-top: 20px;
+    }
+    .info {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <div id="status">GPS tekshirilmoqda...</div>
-  <div id="result"></div>
+  <h1>🚀 Sizning tezligingiz</h1>
+  <div class="speed" id="speed">-- km/soat</div>
+  <div class="info" id="info">GPS tekshirilmoqda...</div>
 
   <script>
-    const statusEl = document.getElementById("status");
-    const resultEl = document.getElementById("result");
+    const speedEl = document.getElementById("speed");
+    const infoEl = document.getElementById("info");
 
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const acc = pos.coords.accuracy;
-        statusEl.innerText = acc < 50
-          ? "✅ Ehtimoliy GPS mavjud (aniqlik: " + acc.toFixed(1) + " m)"
-          : "❌ GPS yo‘q, Wi-Fi/IP asosida aniqlangan (aniqlik: " + acc.toFixed(1) + " m)";
-
-        resultEl.innerHTML = `
-          📍 Kenglik: ${pos.coords.latitude}<br>
-          📍 Uzunlik: ${pos.coords.longitude}<br>
-          🎯 Aniqlik: ${acc.toFixed(1)} metr<br>
-          🕒 Vaqt: ${new Date(pos.timestamp).toLocaleString()}
-        `;
-      }, (err) => {
-        statusEl.innerText = "❌ GPS so‘rov bajarilmadi: " + err.message;
-      });
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const spd = pos.coords.speed; // m/s
+          const kmh = spd !== null ? (spd * 3.6).toFixed(2) : "0.00";
+          speedEl.textContent = kmh + " km/soat";
+          infoEl.innerHTML = `
+            📍 Latitude: ${pos.coords.latitude.toFixed(6)}<br>
+            📍 Longitude: ${pos.coords.longitude.toFixed(6)}<br>
+            🎯 Aniqlik: ${pos.coords.accuracy.toFixed(1)} metr
+          `;
+        },
+        (err) => {
+          infoEl.textContent = "❌ GPS xatolik: " + err.message;
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 5000
+        }
+      );
     } else {
-      statusEl.innerText = "❌ Brauzeringiz GPS'ni qo‘llamaydi.";
+      infoEl.textContent = "❌ Qurilmangiz GPS'ni qo‘llamaydi.";
     }
   </script>
 </body>
