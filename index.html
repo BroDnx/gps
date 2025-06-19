@@ -2,31 +2,56 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <title>Tezlikni aniqlash (GPS)</title>
+  <title>🚗 Tezlikni Aniqlash (Real Vaqt)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background-color: #000;
-      color: #0f0;
-      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #000000, #0f0f0f);
+      color: #00ff99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       text-align: center;
-      padding-top: 80px;
     }
-    h1 { color: #00ffff; }
-    .speed {
-      font-size: 48px;
-      margin-top: 20px;
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #00ffff;
     }
-    .info {
-      margin-top: 20px;
+
+    #speed {
+      font-size: 80px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #00ff66;
+    }
+
+    #info {
       font-size: 18px;
       color: #aaa;
+    }
+
+    @media (max-width: 500px) {
+      #speed {
+        font-size: 60px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🚀 Sizning tezligingiz</h1>
-  <div class="speed" id="speed">-- km/soat</div>
-  <div class="info" id="info">GPS tekshirilmoqda...</div>
+  <h1>🚀 Sizning Tezligingiz</h1>
+  <div id="speed">-- km/soat</div>
+  <div id="info">GPS tekshirilmoqda...</div>
 
   <script>
     const speedEl = document.getElementById("speed");
@@ -34,27 +59,36 @@
 
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition(
-        (pos) => {
-          const spd = pos.coords.speed; // m/s
-          const kmh = spd !== null ? (spd * 3.6).toFixed(2) : "0.00";
-          speedEl.textContent = kmh + " km/soat";
+        (position) => {
+          const speed = position.coords.speed;
+          const accuracy = position.coords.accuracy;
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+
+          if (speed !== null && accuracy < 30) {
+            const kmh = (speed * 3.6).toFixed(1);
+            speedEl.textContent = `${kmh} km/soat`;
+          } else {
+            speedEl.textContent = "0.0 km/soat";
+          }
+
           infoEl.innerHTML = `
-            📍 Latitude: ${pos.coords.latitude.toFixed(6)}<br>
-            📍 Longitude: ${pos.coords.longitude.toFixed(6)}<br>
-            🎯 Aniqlik: ${pos.coords.accuracy.toFixed(1)} metr
+            🎯 Aniqlik: ${accuracy.toFixed(1)} metr<br>
+            📍 Lat: ${lat}, Lon: ${lon}
           `;
         },
         (err) => {
           infoEl.textContent = "❌ GPS xatolik: " + err.message;
+          speedEl.textContent = "-- km/soat";
         },
         {
           enableHighAccuracy: true,
-          maximumAge: 1000,
-          timeout: 5000
+          maximumAge: 500,
+          timeout: 3000
         }
       );
     } else {
-      infoEl.textContent = "❌ Qurilmangiz GPS'ni qo‘llamaydi.";
+      infoEl.textContent = "❌ Brauzeringiz GPS'ni qo‘llamaydi.";
     }
   </script>
 </body>
